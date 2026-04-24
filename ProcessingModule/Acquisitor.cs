@@ -57,6 +57,41 @@ namespace ProcessingModule
 		private void Acquisition_DoWork()
 		{
             //TO DO: IMPLEMENT
+            while (true)
+            {
+                try
+                {
+                    // Cekaj signal tajmera (okida se svake sekunde)
+                    acquisitionTrigger.WaitOne();
+
+                    // Prodi kroz sve konfigurisane registre iz RtuCfg.txt
+                    foreach (var configItem in configuration.GetConfigurationItems())
+                    {
+                        // Povecaj brojac sekundi za ovaj registar
+                        configItem.SecondsPassedSinceLastPoll++;
+
+                        // Da li je proslo dovoljno sekundi?
+                        if (configItem.SecondsPassedSinceLastPoll >= configItem.AcquisitionInterval)
+                        {
+                            // Resetuj brojac
+                            configItem.SecondsPassedSinceLastPoll = 0;
+
+                            // Posalji READ komandu za ovaj blok registara
+                            processingManager.ExecuteReadCommand(
+                                configItem,                          // koji registar
+                                configuration.GetTransactionId(),   // ID transakcije
+                                configuration.UnitAddress,          // adresa uredjaja (148)
+                                configItem.StartAddress,             // od koje adrese
+                                configItem.NumberOfRegisters         // koliko registara
+                            );
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    stateUpdater.LogMessage(ex.Message);
+                }
+            }
         }
 
         #endregion Private Methods
