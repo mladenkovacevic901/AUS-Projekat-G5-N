@@ -4,6 +4,7 @@ using System.Threading;
 
 namespace ProcessingModule
 {
+    //test1
     /// <summary>
     /// Class containing logic for periodic polling.
     /// </summary>
